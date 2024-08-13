@@ -87,11 +87,12 @@ P.S. You can delete this when you're done too. It's your config now! :)
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
+
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -159,6 +160,12 @@ vim.opt.scrolloff = 10
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
+
+vim.opt.expandtab = true
+vim.opt.smartindent = true
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
+
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
@@ -174,12 +181,6 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- NOTE: This won't work in all terminal emulators/tmux/etc. Try your own mapping
 -- or just use <C-\><C-n> to exit terminal mode
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
-
--- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -220,9 +221,8 @@ vim.opt.rtp:prepend(lazypath)
 --
 --  You can press `?` in this menu for help. Use `:q` to close the window
 --
---  To update plugins you can run
+--  To update plugins you can run=
 --    :Lazy update
---
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
@@ -233,13 +233,118 @@ require('lazy').setup({
   -- keys can be used to configure plugin behavior/loading/etc.
   --
   -- Use `opts = {}` to force a plugin to be loaded.
-  --
+  {
+    'goolord/alpha-nvim',
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+
+    config = function()
+      local alpha = require 'alpha'
+      local dashboard = require 'alpha.themes.dashboard'
+
+      dashboard.section.header.val = {
+        [[               ,.-·~ ^~, ‘         , ·. ,.-·~·.,   ‘             ,.  '                ,.  '           ,-·-.          ,'´¨;          ]],
+        [[      .'´  ,.-·~-.,':\        /  ·'´,.-·-.,   `,'‚           /   ';\              /   ';\           ';   ';\      ,'´  ,':\'        ]],
+        [[     ;   ,':\::::::'\::\      /  .'´\:::::::'\   '\ °       ,'   ,'::'\           ,'   ,'::'\           ;   ';:\   .'   ,'´::'\'    ]],
+        [[    ;'   ;:::'_-·~-\;' ‘  ,·'  ,'::::\:;:-·-:';  ';\‚      ,'    ;:::';'         ,'    ;:::';'          '\   ';::;'´  ,'´::::;'     ]],
+        [[  ,.'    'ª*'´ __'`;\ °  ;.   ';:::;´       ,'  ,':'\‚     ';   ,':::;'          ';   ,':::;'             \  '·:'  ,'´:::::;' '     ]],
+        [[  `',   ;\¯::::::::\:\‘   ';   ;::;       ,'´ .'´\::';‚    ;  ,':::;' '          ;  ,':::;' '              '·,   ,'::::::;'´        ]],
+        [[   ;   ;::\;::_:_::\;'   ';   ':;:   ,.·´,.·´::::\;'°   ,'  ,'::;'            ,'  ,'::;'                  ,'  /::::::;'  '          ]],
+        [[   ;  ';:::;        '       \·,   `*´,.·'´::::::;·´      ;  ';_:,.-·´';\‘     ;  ';_:,.-·´';\‘         ,´  ';\::::;'  '             ]],
+        [[   ';  ;::';                 \\:¯::\:::::::;:·´         ',   _,.-·'´:\:\‘    ',   _,.-·'´:\:\‘        \`*ª'´\\::/‘                  ]],
+        [[    \*´\:';        '‚         `\:::::\;::·'´  °           \¨:::::::::::\';     \¨:::::::::::\';         '\:::::\';  '               ]],
+        [[     '\::\;     '                 ¯                       '\;::_;:-·'´‘        '\;::_;:-·'´‘             `*ª'´‘                     ]],
+        [[       `*´‘                       ‘                         '¨                   '¨                        '                        ]],
+      }
+
+      alpha.setup(dashboard.opts)
+    end,
+  },
+
+  {
+    'dpayne/CodeGPT.nvim',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'MunifTanjim/nui.nvim',
+    },
+
+    config = function()
+      require 'codegpt.config'
+    end,
+  },
+
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+
+    config = function()
+      require('lualine').setup {
+        options = {
+          icons_enabled = true,
+          theme = 'auto',
+          component_separators = { left = '', right = '' },
+          section_separators = { left = '', right = '' },
+
+          disabled_filetypes = {
+            statusline = {},
+            winbar = {},
+          },
+
+          ignore_focus = {},
+          always_divide_middle = true,
+          globalstatus = false,
+
+          refresh = {
+            statusline = 1000,
+            tabline = 1000,
+            winbar = 1000,
+          },
+        },
+
+        sections = {
+          lualine_a = { 'mode' },
+          lualine_b = { 'branch', 'diff', 'diagnostics' },
+          lualine_c = { 'filename' },
+          lualine_x = { 'encoding', 'fileformat', 'filetype' },
+          lualine_y = { 'progress' },
+          lualine_z = { 'location' },
+        },
+
+        inactive_sections = {
+          lualine_a = {},
+          lualine_b = {},
+          lualine_c = { 'filename' },
+          lualine_x = { 'location' },
+          lualine_y = {},
+          lualine_z = {},
+        },
+
+        tabline = {},
+        winbar = {},
+        inactive_winbar = {},
+        extensions = {},
+      }
+    end,
+  },
+
+  {
+    'nvim-neo-tree/neo-tree.nvim',
+    branch = 'v3.x',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font }, -- not strictly required, but recommended
+      'MunifTanjim/nui.nvim',
+      '3rd/image.nvim', -- Optional image support in preview window: See `# Preview Mode` for more information
+    },
+  },
+
   --  This is equivalent to:
   --    require('Comment').setup({})
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
-
+  --
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
   --    require('gitsigns').setup({ ... })
@@ -382,6 +487,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>g', builtin.git_commits, { desc = '[G]it commit history' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -729,7 +835,7 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<CR>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
@@ -773,20 +879,21 @@ require('lazy').setup({
     end,
   },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
+  {
+    'catppuccin/nvim',
+    name = 'catppuccin',
+    priority = 1000,
     init = function()
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+      vim.cmd.colorscheme 'catppuccin'
+    end,
+  },
+
+  {
+    'folke/tokyonight.nvim',
+    priority = 1000,
+    init = function()
       vim.cmd.colorscheme 'tokyonight-night'
 
-      -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
     end,
   },
@@ -873,12 +980,11 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
